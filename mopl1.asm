@@ -20,13 +20,15 @@ MOP	DB	"Mashinno-orientirovannoe programmirovanie",0
 LABR	DB	"Laboratornaya rabota N 1",0
 Choc	DB	"Calculate?", 0
 REQ1    DB      "Zamedlit' vremya raboty v taktah(-), uskorit' vremya raboty v taktah (+),", 0
+NEWLINE DB " ", 0
 ;------------- Новые переменные ------------------------------------------------------------------
 REQ2	DB	"vychislit' funkciyu (f), vyjti(ESC)?", 0
 ;-------------------------------------------------------------------------------------------------
+X DB "Xn = ",0FFh
 TACTS   DB	"Время работы в тактах: ",0
-X DB 0,"X = "
+N DB "N = ",0FFh
 XNUM  DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Y DB "Y = "
+Y DB "Y = ",0FFh
 YNUM  DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 EMPTYS	DB	0
 BUFLEN = 70
@@ -108,12 +110,15 @@ CFUNC: CMP	AL,	CHESC
 	JMP	@@L
 	; Выход из программы
 func:
-	PUTLS X
-	CALL	GETCH
+	PUTL N
+	CALL GETCH
 	SUB AL, 30h ;введение позиции бита
 	mov cl, AL  ;кол-во сдвигов
 	ror ebx, cl ;сдвиг под  нужный бит
+	PUTL NEWLINE
+	PUTL X
 	CALL GETCH
+	PUTL NEWLINE
 	SUB AL, 30h ;запись значения
 	add bl, AL	;прибавление значения
 	mov al, 32h ;длина ebx
@@ -122,10 +127,9 @@ func:
 	ror ebx, cl ;сдвигаем в начальное состояние
 	JMP CHOICE
 CHOICE:
-	mov dl,al
-	mov ah,02h
-	int 21h
-	PUTLS Choc
+	mov ax, bx
+	call OutBin
+	PUTL Choc
 	CALL GETCH
 	CMP	al, 'y'
 	JNE func
@@ -137,4 +141,11 @@ CHOICE:
 	EXTRN   GETS:   NEAR
 	EXTRN   SLEN:   NEAR
 	EXTRN   UTOA10: NEAR
+	EXTRN   OutBin: NEAR
 	END	BEGIN
+
+
+;keyb ru
+;mount c C:\asm
+;c:
+;keyrus /scan=88

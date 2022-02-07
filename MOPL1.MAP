@@ -1,9 +1,31 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 00337H 00338H _TEXT              CODE
- 00340H 005A7H 00268H _DATA              DATA
- 005B0H 007AFH 00200H STACK              STACK
+ 00000H 0036BH 0036CH _TEXT              CODE
+ 00370H 005DFH 00270H _DATA              DATA
+ 005E0H 007DFH 00200H STACK              STACK
+
+  Address         Publics by Name
+
+ 0000:034F       DILAY
+ 0000:02AD       GETCH
+ 0000:02B5       GETS
+ 0000:0354       OUTBIN
+ 0000:02A4       PUTC
+ 0000:0282       PUTSS
+ 0000:02C9       SLEN
+ 0000:02DE       UTOA10
+
+  Address         Publics by Value
+
+ 0000:0282       PUTSS
+ 0000:02A4       PUTC
+ 0000:02AD       GETCH
+ 0000:02B5       GETS
+ 0000:02C9       SLEN
+ 0000:02DE       UTOA10
+ 0000:034F       DILAY
+ 0000:0354       OUTBIN
 
 Program entry point at 0000:0000
 
