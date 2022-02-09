@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 3.1	    02/07/22 22:15:16	    Page 1
+Turbo Assembler	 Version 3.1	    02/09/22 13:16:49	    Page 1
 mopl1l.asm
 
 
@@ -60,7 +60,7 @@ mopl1l.asm
      55	    0021  C3			 @@R:	 RET
      56	    0022			 PUTSS	 ENDP
      57
-Turbo Assembler	 Version 3.1	    02/07/22 22:15:16	    Page 2
+Turbo Assembler	 Version 3.1	    02/09/22 13:16:49	    Page 2
 mopl1l.asm
 
 
@@ -122,7 +122,7 @@ mopl1l.asm
     112	    0057  40				 INC	 AX
     113	    0058  46				 INC	 SI
     114	    0059  EB EE				 JMP	 SHORT	 LSLEN
-Turbo Assembler	 Version 3.1	    02/07/22 22:15:16	    Page 3
+Turbo Assembler	 Version 3.1	    02/09/22 13:16:49	    Page 3
 mopl1l.asm
 
 
@@ -184,7 +184,7 @@ mopl1l.asm
     169						 ; Съедаем первые нули
     170						 ;   сначала подсчитываем
     171	    00B1  80 3C	30		 @@L2:	 CMP	 BYTE PTR [SI],	'0'
-Turbo Assembler	 Version 3.1	    02/07/22 22:15:16	    Page 4
+Turbo Assembler	 Version 3.1	    02/09/22 13:16:49	    Page 4
 mopl1l.asm
 
 
@@ -216,32 +216,14 @@ mopl1l.asm
     196
     197					 ;==============================================
     198					 ; Вывод числа в 2ичной	системе	исчисления
-    199					 ; число должно	лежать в ax
+    199					 ; число должно	лежать в ebx
     200					 ;==============================================
-    201	    00D2			 OutBin	proc NEAR
+    201
     202
-    203	    00D2  8B D8			     mov bx,ax
-    204	    00D4  B9 0010		     mov cx,16
-    205	    00D7			 ob1:
-    206	    00D7  D1 E3			     shl bx,1
-    207	    00D9  72 07	90 90		     jc	ob2
-    208
-    209	    00DD  B2 30			     mov dl,'0'
-    210	    00DF  EB 03	90		     jmp ob3
-    211
-    212	    00E2			 ob2:
-    213	    00E2  B2 31			     mov dl,'1'
-    214	    00E4			 ob3:
-    215	    00E4  B4 02			     mov ah,2
-    216	    00E6  CD 21			     int 21h
-    217	    00E8  E2 ED			     loop ob1
-    218
-    219	    00EA			 OutBin	endp
-    220
-    221						 PUBLIC	 PUTSS,	PUTC, GETCH, GETS, DILAY, SLEN,	UTOA10,	OutBin
-    222
-    223						 END
-Turbo Assembler	 Version 3.1	    02/07/22 22:15:16	    Page 5
+    203						 PUBLIC	 PUTSS,	PUTC, GETCH, GETS, DILAY, SLEN,	UTOA10
+    204
+    205						 END
+Turbo Assembler	 Version 3.1	    02/09/22 13:16:49	    Page 5
 Symbol Table
 
 
@@ -249,9 +231,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "02/07/22"
+??DATE				  Text	 "02/09/22"
 ??FILENAME			  Text	 "mopl1l  "
-??TIME				  Text	 "22:15:16"
+??TIME				  Text	 "13:16:48"
 ??VERSION			  Number 030A
 @32BIT				  Text	 0
 @@E				  Near	 _TEXT:0017
@@ -290,10 +272,6 @@ GETS				  Near	 _TEXT:0033
 LENNUM				  Number 0012
 LENPACK				  Number 0009
 LSLEN				  Near	 _TEXT:0049
-OB1				  Near	 _TEXT:00D7
-OB2				  Near	 _TEXT:00E2
-OB3				  Near	 _TEXT:00E4
-OUTBIN				  Near	 _TEXT:00D2
 PAUSE_H				  Number 0000
 PAUSE_L				  Number 0000
 PUTC				  Near	 _TEXT:0022
@@ -303,7 +281,7 @@ SLEN				  Near	 _TEXT:0047
 UBINARY				  Qword	 DGROUP:0000
 UPACK				  Tbyte	 DGROUP:0008
 UTOA10				  Near	 _TEXT:005C
-Turbo Assembler	 Version 3.1	    02/07/22 22:15:16	    Page 6
+Turbo Assembler	 Version 3.1	    02/09/22 13:16:49	    Page 6
 Symbol Table
 
 
@@ -313,5 +291,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0012 Word	  Public  DATA
-_TEXT				  16  00EA Word	  Public  CODE
+_TEXT				  16  00D2 Word	  Public  CODE
 

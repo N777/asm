@@ -175,28 +175,10 @@ DILAY	ENDP
 
 ;==============================================
 ; Вывод числа в 2ичной системе исчисления 
-; число должно лежать в ax
+; число должно лежать в ebx
 ;==============================================
-OutBin proc NEAR
- 
-    mov bx,ax
-    mov cx,16
-ob1:
-    shl bx,1
-    jc ob2
-    
-    mov dl,'0'
-    jmp ob3
-    
-ob2:
-    mov dl,'1'
-ob3:
-    mov ah,2
-    int 21h
-    loop ob1
-    
-OutBin endp
 
-        PUBLIC	PUTSS, PUTC, GETCH, GETS, DILAY, SLEN, UTOA10, OutBin
+
+        PUBLIC	PUTSS, PUTC, GETCH, GETS, DILAY, SLEN, UTOA10
 
         END

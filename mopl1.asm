@@ -25,6 +25,8 @@ NEWLINE DB " ", 0
 REQ2	DB	"vychislit' funkciyu (f), vyjti(ESC)?", 0
 ;-------------------------------------------------------------------------------------------------
 X DB "Xn = ",0FFh
+O_1 DB "1", 0FFh
+O_0 DB "0", 0FFh
 TACTS   DB	"Время работы в тактах: ",0
 N DB "N = ",0FFh
 XNUM  DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -127,12 +129,29 @@ func:
 	ror ebx, cl ;сдвигаем в начальное состояние
 	JMP CHOICE
 CHOICE:
-	mov ax, bx
 	call OutBin
 	PUTL Choc
 	CALL GETCH
 	CMP	al, 'y'
 	JNE func
+
+OutBin proc
+	mov cl, 32h
+Print_ebx:
+	ror ebx, 1
+	jc Print_ebx_1
+	PUTL O_0
+	dec cl
+	cmp cl, 0
+	JBE Print_ebx
+
+Print_ebx_1:
+	dec cl
+	PUTL O_1
+	cmp cl, 0
+	JBE Print_ebx
+    
+OutBin endp
 
 @@E:	EXIT	
         EXTRN	PUTSS:  NEAR
@@ -141,8 +160,9 @@ CHOICE:
 	EXTRN   GETS:   NEAR
 	EXTRN   SLEN:   NEAR
 	EXTRN   UTOA10: NEAR
-	EXTRN   OutBin: NEAR
 	END	BEGIN
+
+
 
 
 ;keyb ru
