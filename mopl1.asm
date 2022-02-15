@@ -29,9 +29,10 @@ O_1 DB "1", 0FFh
 O_0 DB "0", 0FFh
 TACTS   DB	"Время работы в тактах: ",0
 N DB "N = ",0FFh
-XNUM  DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+XNUM  DD ?
+Xn DB 0,0,0,0
 Y DB "Y = ",0FFh
-YNUM  DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+YNUM  DW ?
 EMPTYS	DB	0
 BUFLEN = 70
 BUF	DB	BUFLEN
@@ -103,7 +104,12 @@ CMINUS:	CMP	AL,	'+'    ; укорачивать задержку?
 BACK:	JMP	@@L
 CEXIT:	CMP	AL,	'f'
 	JNE	CFUNC
-	JMP func
+	xor ebx, ebx
+	call func
+	mov XNUM, ebx
+	mov cx, 4h
+	jmp xn_input
+	
 CFUNC: CMP	AL,	CHESC
 	JE	@@E
 	TEST	AL,	AL
@@ -111,22 +117,46 @@ CFUNC: CMP	AL,	CHESC
 	CALL	GETCH
 	JMP	@@L
 	; Выход из программы
+
+xn_input:
+	xor cx, cx
+	mov cx, 4h 
+	and ebx, 11110b
+l1:
+	shl bl, 1
+	jc xn_1
+	loopw l1
+	jmp calc
+xn_1:
+	mov cx, si
+	mov Xn[si], 1b
+	loopw l1
+	jmp calc
+	
+calc:
+	jmp @@e
+
+
+input proc ; ввод ebx по битово
 func:
+	call OutBin
 	PUTL N
 	CALL GETCH
 	SUB AL, 30h ;введение позиции бита
 	mov cl, AL  ;кол-во сдвигов
 	ror ebx, cl ;сдвиг под  нужный бит
+	pusha ;сохраняю cl
 	PUTL NEWLINE
 	PUTL X
+	popa
 	CALL GETCH
-	PUTL NEWLINE
 	SUB AL, 30h ;запись значения
 	add bl, AL	;прибавление значения
-	mov al, 32h ;длина ebx
+	mov al, 20h ;длина ebx
 	sub al, cl  ;получем значение для возвращения числа на исходную позицию
 	mov cl, al	;перемещаем значение в cl
 	ror ebx, cl ;сдвигаем в начальное состояние
+	PUTL NEWLINE
 	JMP CHOICE
 CHOICE:
 	call OutBin
@@ -134,23 +164,30 @@ CHOICE:
 	CALL GETCH
 	CMP	al, 'y'
 	JNE func
+	ret
+input endp
 
-OutBin proc
-	mov cl, 32h
+	
+OutBin proc ; процедура вывода ebx по битово
+	xor cx, cx
+	mov cx, 20h
 Print_ebx:
-	ror ebx, 1
+	rol ebx, 1
 	jc Print_ebx_1
-	PUTL O_0
-	dec cl
-	cmp cl, 0
-	JBE Print_ebx
+	mov ah,02h
+	mov dl,'0'
+	int 21h
+	loopw Print_ebx
+	PUTL NEWLINE
+	ret
 
 Print_ebx_1:
-	dec cl
-	PUTL O_1
-	cmp cl, 0
-	JBE Print_ebx
-    
+	mov ah,02h
+	mov dl,'1'
+	int 21h
+	loopw Print_ebx
+	PUTL NEWLINE
+	ret
 OutBin endp
 
 @@E:	EXIT	
