@@ -107,7 +107,6 @@ CEXIT:	CMP	AL,	'f'
 	xor ebx, ebx
 	call func
 	mov XNUM, ebx
-	mov cx, 4h
 	jmp xn_input
 	
 CFUNC: CMP	AL,	CHESC
@@ -121,19 +120,52 @@ CFUNC: CMP	AL,	CHESC
 xn_input:
 	xor cx, cx
 	mov cx, 4h 
-	and ebx, 11110b
+	and ebx, 11110b ;нужные биты оставляем остальные зануляем
 l1:
-	shl bl, 1
-	jc xn_1
+	shl bl, 1; побитово заносим в cf x 
+	jc xn_1; если равен 1, то прыгаем
+	mov si, cx
+	mov Xn[si-1h], 0b
 	loopw l1
 	jmp calc
 xn_1:
-	mov cx, si
-	mov Xn[si], 1b
+	mov si, cx
+	mov Xn[si-1h], 1b
 	loopw l1
 	jmp calc
 	
 calc:
+	xor dl, dl
+	xor ebx, ebx
+	mov bx, Xn[0] ;x_1 x_2 x3
+	not bx
+	mov bl, Xn[1]
+	not bl
+	and bx, bl
+	mov bl, Xn[2]
+	and bx, bl
+	mov dl, bx
+	mov bx, Xn[0] ;x1 x3
+	mov bl, Xn[2]
+	and bx, bl
+	or dl, bx ; x_1 x_2 x3 | x1 x3 
+	mov bx, Xn[1]
+	mov bl, Xn[2]
+	not bl
+	and bx, bl
+	or dl, bx ;  | x2 x_3
+	mov bx, Xn[1] ;x2 x4 
+	mov bl, Xn[3]
+	and bx, bl
+	or dl, bx ;| x2 x4
+	mov bx, Xn[0];  x1 x_3 x_4
+	mov bl, Xn[2]
+	not bl
+	and bx, bl
+	mov bl, Xn[3]
+	not bl
+	and bx, bl
+	or dl, bx ; |x1 x_3 x_4
 	jmp @@e
 
 
