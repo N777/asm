@@ -14,17 +14,19 @@
 SLINE	DB	78 DUP (CHSEP), 0
 REQ	DB	"Fimiliya I.O.: ",0FFh
 MINIS	DB	"MINISTERSTVO OBRAZOVANIYA ROSSIJSKOJ FEDERACII",0
+IN_X DB "Введите X: (где N это позиция бита, а An его значение)", 0
+IN_Y DB "Введите Y: (где N это позиция бита, а An его значение)", 0
 ULSTU	DB	"UL'YANOVSKIJ GOSUDARSTVENNYJ TEKHNICHESKIJ UNIVERSITET",0
 DEPT	DB	"Kafedra vychislitel'noj tekhniki",0
 MOP	DB	"Mashinno-orientirovannoe programmirovanie",0
 LABR	DB	"Laboratornaya rabota N 1",0
-Choc	DB	"Calculate?", 0
+Choc	DB	"Done?", 0
 REQ1    DB      "Zamedlit' vremya raboty v taktah(-), uskorit' vremya raboty v taktah (+),", 0
 NEWLINE DB " ", 0
 ;------------- Новые переменные ------------------------------------------------------------------
 REQ2	DB	"vychislit' funkciyu (f), vyjti(ESC)?", 0
 ;-------------------------------------------------------------------------------------------------
-X DB "Xn = ",0FFh
+X DB "An = ",0FFh
 O_1 DB "1", 0FFh
 O_0 DB "0", 0FFh
 TACTS   DB	"Время работы в тактах: ",0
@@ -32,7 +34,7 @@ N DB "N = ",0FFh
 XNUM  DD ?
 Xn DB 0,0,0,0
 Y DB "Y = ",0FFh
-YNUM  DW ?
+YNUM  DD ?
 EMPTYS	DB	0
 BUFLEN = 70
 BUF	DB	BUFLEN
@@ -104,8 +106,11 @@ CMINUS:	CMP	AL,	'+'    ; укорачивать задержку?
 BACK:	JMP	@@L
 CEXIT:	CMP	AL,	'f'
 	JNE	CFUNC
-	xor ebx, ebx
-	call func
+	PUTL IN_Y
+	call input
+	mov YNUM, ebx
+	PUTL IN_X
+	call input
 	mov XNUM, ebx
 	jmp xn_input
 	
@@ -118,6 +123,7 @@ CFUNC: CMP	AL,	CHESC
 	; Выход из программы
 
 xn_input:
+	mov ebx, XNUM
 	xor cx, cx
 	mov cx, 4h 
 	and ebx, 11110b ;нужные биты оставляем остальные зануляем
@@ -137,39 +143,135 @@ xn_1:
 calc:
 	xor dl, dl
 	xor ebx, ebx
-	mov bx, Xn[0] ;x_1 x_2 x3
-	not bx
+	mov bh, Xn[0] ;x_1 x_2 x3
+	not bh
 	mov bl, Xn[1]
 	not bl
-	and bx, bl
+	and bh, bl
 	mov bl, Xn[2]
-	and bx, bl
-	mov dl, bx
-	mov bx, Xn[0] ;x1 x3
+	and bh, bl
+	mov dl, bh
+	mov bh, Xn[0] ;x1 x3
 	mov bl, Xn[2]
-	and bx, bl
-	or dl, bx ; x_1 x_2 x3 | x1 x3 
-	mov bx, Xn[1]
+	and bh, bl
+	or dl, bh ; x_1 x_2 x3 | x1 x3 
+	mov bh, Xn[1]
 	mov bl, Xn[2]
 	not bl
-	and bx, bl
-	or dl, bx ;  | x2 x_3
-	mov bx, Xn[1] ;x2 x4 
+	and bh, bl
+	or dl, bh ;  | x2 x_3
+	mov bh, Xn[1] ;x2 x4 
 	mov bl, Xn[3]
-	and bx, bl
-	or dl, bx ;| x2 x4
-	mov bx, Xn[0];  x1 x_3 x_4
+	and bh, bl
+	or dl, bh ;| x2 x4
+	mov bh, Xn[0];  x1 x_3 x_4
 	mov bl, Xn[2]
 	not bl
-	and bx, bl
+	and bh, bl
 	mov bl, Xn[3]
 	not bl
-	and bx, bl
-	or dl, bx ; |x1 x_3 x_4
+	and bh, bl
+	or dl, bh ; |x1 x_3 x_4
+	;получили f в dl
+	cmp dl, 1b
+	je f_1
+	mov eax, XNUM
+	mov ebx, 8h
+	div ebx
+	mov ebx, YNUM
+	add ebx, edx
+	jmp z
+
+f_1:
+	mov ebx, XNUM
+	mov eax, 2h
+	mul ebx ; результат умножения лежит в eax
+	mov ebx, YNUM
+	sub eax, ebx
+	mov ebx, eax
+	jmp z
+	
+z:
+	;z7& = z4
+	mov ch, 20h
+	mov cl, 5
+	ror ebx, cl ; 4+1, чтобы закинуть бит в cf
+	call byte_from_cf
+	mov dh, dl
+	sub ch, cl
+	mov cl, ch
+	ror ebx, cl
+
+	mov ch, 20h
+	mov cl, 7
+	ror ebx, cl ; 7, чтобы подвести к нужному биту
+	shr ebx, 1 ; закинуть его в cf и занулить
+	call byte_from_cf
+	rol ebx, 1
+	and dl, dh
+	add ebx, dl
+	sub ch, cl
+	mov cl, ch
+	ror ebx, cl
+	;z9 |= z11
+	mov ch, 20h
+	mov cl, 11
+	ror ebx, cl ; 11+1, чтобы закинуть бит в cf
+	call byte_from_cf
+	mov dh, dl
+	sub ch, cl
+	mov cl, ch
+	ror ebx, cl
+
+	mov ch, 20h
+	mov cl, 9
+	ror ebx, ch ; 9, чтобы подвести к нужному биту
+	shr ebx, 1 ; закинуть его в cf и занулить
+	call byte_from_cf
+	rol ebx, 1
+	or dl, dh
+	add ebx, dl
+	sub ch, cl
+	mov cl, ch
+	ror ebx, cl
+	; z15 = _z17
+	mov ch, 20h
+	mov cl, 17
+	ror ebx, cl ; 17+1, чтобы закинуть бит в cf
+	call byte_from_cf
+	mov dh, dl
+	sub ch, cl
+	mov cl, ch
+	ror ebx, cl
+
+	mov ch, 20h
+	mov cl, 15
+	ror ebx, ch ; 9, чтобы подвести к нужному биту
+	shr ebx, 1 ; закинуть его в cf и занулить
+	call byte_from_cf
+	rol ebx, 1
+	not dh
+	add ebx, dh
+	sub ch, cl
+	mov cl, ch
+	ror ebx, cl
+	
+
+	call OutBin
 	jmp @@e
 
 
+byte_from_cf proc ; заносит бит из cf в dl
+	jc byte_1
+	mov dl, 0b
+	ret
+byte_1:
+	mov dl, 1b
+	ret
+byte_from_cf endp
+
 input proc ; ввод ebx по битово
+	xor ebx, ebx
 func:
 	call OutBin
 	PUTL N
