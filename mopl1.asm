@@ -31,6 +31,7 @@ O_1 DB "1", 0FFh
 O_0 DB "0", 0FFh
 TACTS   DB	"Время работы в тактах: ",0
 N DB "N = ",0FFh
+ZS DB "Z = ",0FFh
 XNUM  DD ?
 Xn DB 0,0,0,0
 Y DB "Y = ",0FFh
@@ -126,9 +127,10 @@ xn_input:
 	mov ebx, XNUM
 	xor cx, cx
 	mov cx, 4h 
-	and ebx, 11110b ;нужные биты оставляем остальные зануляем
+	and ebx, 11110b
+	shr bl, 1 ;нужные биты оставляем остальные зануляем
 l1:
-	shl bl, 1; побитово заносим в cf x 
+	shr bl, 1; побитово заносим в cf x 
 	jc xn_1; если равен 1, то прыгаем
 	mov si, cx
 	mov Xn[si-1h], 0b
@@ -145,8 +147,10 @@ calc:
 	xor ebx, ebx
 	mov bh, Xn[0] ;x_1 x_2 x3
 	not bh
+	and bh, 00000001b
 	mov bl, Xn[1]
 	not bl
+	and bl, 00000001b
 	and bh, bl
 	mov bl, Xn[2]
 	and bh, bl
@@ -158,6 +162,7 @@ calc:
 	mov bh, Xn[1]
 	mov bl, Xn[2]
 	not bl
+	and bl, 00000001b
 	and bh, bl
 	or dl, bh ;  | x2 x_3
 	mov bh, Xn[1] ;x2 x4 
@@ -167,9 +172,11 @@ calc:
 	mov bh, Xn[0];  x1 x_3 x_4
 	mov bl, Xn[2]
 	not bl
+	and bl, 00000001b
 	and bh, bl
 	mov bl, Xn[3]
 	not bl
+	and bl, 00000001b
 	and bh, bl
 	or dl, bh ; |x1 x_3 x_4
 	;получили f в dl
@@ -179,23 +186,24 @@ calc:
 	mov ebx, 8h
 	div ebx
 	mov ebx, YNUM
-	add ebx, edx
+	add ebx, eax
 	jmp z
 
 f_1:
 	mov ebx, XNUM
-	mov eax, 2h
-	mul ebx ; результат умножения лежит в eax
+	imul eax,ebx, 2h ; результат умножения лежит в eax
 	mov ebx, YNUM
 	sub eax, ebx
 	mov ebx, eax
 	jmp z
 	
 z:
+	PUTL ZS
+	call OutBin
 	;z7& = z4
 	mov ch, 20h
-	mov cl, 5
-	ror ebx, cl ; 4+1, чтобы закинуть бит в cf
+	mov cl, 4
+	ror ebx, cl ; 4, чтобы закинуть бит в cf
 	call byte_from_cf
 	mov dh, dl
 	sub ch, cl
@@ -203,20 +211,23 @@ z:
 	ror ebx, cl
 
 	mov ch, 20h
-	mov cl, 7
+	mov cl, 6
 	ror ebx, cl ; 7, чтобы подвести к нужному биту
 	shr ebx, 1 ; закинуть его в cf и занулить
 	call byte_from_cf
 	rol ebx, 1
 	and dl, dh
-	add ebx, dl
+	mov al, dl ; переношу результат в al чтобы расширить до dword
+	CBW 
+	cwde
+	add ebx, eax
 	sub ch, cl
 	mov cl, ch
 	ror ebx, cl
 	;z9 |= z11
 	mov ch, 20h
 	mov cl, 11
-	ror ebx, cl ; 11+1, чтобы закинуть бит в cf
+	ror ebx, cl ; 11, чтобы закинуть бит в cf
 	call byte_from_cf
 	mov dh, dl
 	sub ch, cl
@@ -224,13 +235,16 @@ z:
 	ror ebx, cl
 
 	mov ch, 20h
-	mov cl, 9
-	ror ebx, ch ; 9, чтобы подвести к нужному биту
+	mov cl, 8
+	ror ebx, cl ; 9, чтобы подвести к нужному биту
 	shr ebx, 1 ; закинуть его в cf и занулить
 	call byte_from_cf
 	rol ebx, 1
 	or dl, dh
-	add ebx, dl
+	mov al, dl ; переношу результат в al чтобы расширить до dword
+	CBW 
+	cwde
+	add ebx, eax
 	sub ch, cl
 	mov cl, ch
 	ror ebx, cl
@@ -246,17 +260,21 @@ z:
 
 	mov ch, 20h
 	mov cl, 15
-	ror ebx, ch ; 9, чтобы подвести к нужному биту
+	ror ebx, cl ; 15, чтобы подвести к нужному биту
 	shr ebx, 1 ; закинуть его в cf и занулить
 	call byte_from_cf
 	rol ebx, 1
 	not dh
-	add ebx, dh
+	and dh, 00000001b
+	mov al, dh ; переношу результат в al чтобы расширить до dword
+	CBW 
+	cwde
+	add ebx, eax
 	sub ch, cl
 	mov cl, ch
 	ror ebx, cl
 	
-
+	PUTL ZS
 	call OutBin
 	jmp @@e
 
