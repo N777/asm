@@ -29,8 +29,12 @@ REQ2	DB	"vychislit' funkciyu (f), vyjti(ESC)?", 0
 X DB "An = ",0FFh
 O_1 DB "1", 0FFh
 O_0 DB "0", 0FFh
+
 TACTS   DB	"Время работы в тактах: ",0
 N DB "N = ",0FFh
+F DB "F = ",0FFh
+FSTR DB "F6 = !x1!x2x3|x1!x3|x2x3|x2x4|x1!x3!x4",0
+ZSTR DB "Z = F6?X*2-Y: X/8+Y ;z7& = z4; z9 |= z11; z15 = _z17",0
 ZS DB "Z = ",0FFh
 XNUM  DD ?
 Xn DB 0,0,0,0
@@ -126,25 +130,57 @@ CFUNC: CMP	AL,	CHESC
 xn_input:
 	mov ebx, XNUM
 	xor cx, cx
-	mov cx, 4h 
+	mov si, 0 
 	and ebx, 11110b
 	shr bl, 1 ;нужные биты оставляем остальные зануляем
 l1:
 	shr bl, 1; побитово заносим в cf x 
 	jc xn_1; если равен 1, то прыгаем
-	mov si, cx
-	mov Xn[si-1h], 0b
-	loopw l1
-	jmp calc
+	mov Xn[si], 0b
+	jmp l2
 xn_1:
-	mov si, cx
-	mov Xn[si-1h], 1b
-	loopw l1
+	mov Xn[si], 1b
+l2:
+	inc si
+	cmp si, 4
+	jl l1
 	jmp calc
 	
 calc:
+	pushad
+	PUTL FSTR
+	popad
 	xor dl, dl
 	xor ebx, ebx
+
+
+	PUTL X
+	mov ah,02h
+	mov dl, Xn[0]
+	add dl, 30h
+	int 21h
+	PUTL NEWLINE
+	PUTL X
+	mov ah,02h
+	mov dl, Xn[1]
+	add dl, 30h
+	int 21h
+	PUTL NEWLINE
+	PUTL X
+	mov ah,02h
+	mov dl, Xn[2]
+	add dl, 30h
+	int 21h
+	PUTL NEWLINE
+	PUTL X
+	mov ah,02h
+	mov dl, Xn[3]
+	add dl, 30h
+	int 21h
+	PUTL NEWLINE
+	
+
+
 	mov bh, Xn[0] ;x_1 x_2 x3
 	not bh
 	and bh, 00000001b
@@ -180,7 +216,16 @@ calc:
 	and bh, bl
 	or dl, bh ; |x1 x_3 x_4
 	;получили f в dl
-	cmp dl, 1b
+	pushad
+	PUTL F
+	popad
+	pushad
+	mov ah,02h
+	add dl, 30h
+	int 21h
+	PUTL NEWLINE
+	popad
+	cmp dl, 1 ; начинаем считать z
 	je f_1
 	mov eax, XNUM
 	mov ebx, 8h
@@ -198,6 +243,7 @@ f_1:
 	jmp z
 	
 z:
+	PUTL ZSTR
 	PUTL ZS
 	call OutBin
 	;z7& = z4
@@ -279,6 +325,34 @@ z:
 	jmp @@e
 
 
+InputInt proc 
+;Введенное число будет находиться в ax
+	push ebx
+	push ecx
+    mov ah,01h
+    int 21h ; в al - первый символ
+    sub al,30h  ; теперь первая цифра
+    mov ah,0  ; расширение до слова
+    mov bx,10
+    mov cx,ax ; в cx - первая цифра
+Lp:  mov ah,01h
+    int 21h ;   в al следующий символ
+    cmp al,0dh  ; сравнение с символом Enter
+    je Ed         ; конец ввода
+    sub al,30h   ; в al - следующая цифра
+    cbw             ; расширение до слова
+    xchg ax,cx   ; теперь в ax - предыдущее число, в cx - следующая
+    mul bx          ; ax*10
+    add cx,ax      ; cx=ax*10+cx
+    jmp Lp     ; продолжение ввода
+Ed :
+	mov ax, cx
+    pop ecx
+	pop ebx
+	ret
+InputInt endp
+
+
 byte_from_cf proc ; заносит бит из cf в dl
 	jc byte_1
 	mov dl, 0b
@@ -288,27 +362,28 @@ byte_1:
 	ret
 byte_from_cf endp
 
+
+
 input proc ; ввод ebx по битово
 	xor ebx, ebx
 func:
 	call OutBin
 	PUTL N
-	CALL GETCH
-	SUB AL, 30h ;введение позиции бита
-	mov cl, AL  ;кол-во сдвигов
+	CALL InputInt
+	mov cl, al  ;кол-во сдвигов
 	ror ebx, cl ;сдвиг под  нужный бит
 	pusha ;сохраняю cl
 	PUTL NEWLINE
-	PUTL X
+	;PUTL X
 	popa
-	CALL GETCH
-	SUB AL, 30h ;запись значения
-	add bl, AL	;прибавление значения
+	;CALL GETCH
+	;SUB AL, 30h ;запись значения
+	add bl, 1	;прибавление значения
 	mov al, 20h ;длина ebx
 	sub al, cl  ;получем значение для возвращения числа на исходную позицию
 	mov cl, al	;перемещаем значение в cl
 	ror ebx, cl ;сдвигаем в начальное состояние
-	PUTL NEWLINE
+	;PUTL NEWLINE
 	JMP CHOICE
 CHOICE:
 	call OutBin
@@ -322,7 +397,8 @@ input endp
 	
 OutBin proc ; процедура вывода ebx по битово
 	xor cx, cx
-	mov cx, 20h
+	rol ebx, 12
+	mov cx, 20
 Print_ebx:
 	rol ebx, 1
 	jc Print_ebx_1
@@ -330,14 +406,14 @@ Print_ebx:
 	mov dl,'0'
 	int 21h
 	loopw Print_ebx
-	PUTL NEWLINE
-	ret
-
+	jmp P_END
 Print_ebx_1:
 	mov ah,02h
 	mov dl,'1'
 	int 21h
 	loopw Print_ebx
+	jmp P_END
+P_END:
 	PUTL NEWLINE
 	ret
 OutBin endp

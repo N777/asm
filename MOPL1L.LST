@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 3.1	    02/25/22 14:48:03	    Page 1
+Turbo Assembler	 Version 3.1	    02/27/22 19:59:22	    Page 1
 mopl1l.asm
 
 
@@ -60,7 +60,7 @@ mopl1l.asm
      55	    0021  C3			 @@R:	 RET
      56	    0022			 PUTSS	 ENDP
      57
-Turbo Assembler	 Version 3.1	    02/25/22 14:48:03	    Page 2
+Turbo Assembler	 Version 3.1	    02/27/22 19:59:22	    Page 2
 mopl1l.asm
 
 
@@ -122,7 +122,7 @@ mopl1l.asm
     112	    0057  40				 INC	 AX
     113	    0058  46				 INC	 SI
     114	    0059  EB EE				 JMP	 SHORT	 LSLEN
-Turbo Assembler	 Version 3.1	    02/25/22 14:48:03	    Page 3
+Turbo Assembler	 Version 3.1	    02/27/22 19:59:22	    Page 3
 mopl1l.asm
 
 
@@ -184,7 +184,7 @@ mopl1l.asm
     169						 ; Съедаем первые нули
     170						 ;   сначала подсчитываем
     171	    00B1  80 3C	30		 @@L2:	 CMP	 BYTE PTR [SI],	'0'
-Turbo Assembler	 Version 3.1	    02/25/22 14:48:03	    Page 4
+Turbo Assembler	 Version 3.1	    02/27/22 19:59:22	    Page 4
 mopl1l.asm
 
 
@@ -223,7 +223,7 @@ mopl1l.asm
     203						 PUBLIC	 PUTSS,	PUTC, GETCH, GETS, DILAY, SLEN,	UTOA10
     204
     205						 END
-Turbo Assembler	 Version 3.1	    02/25/22 14:48:03	    Page 5
+Turbo Assembler	 Version 3.1	    02/27/22 19:59:22	    Page 5
 Symbol Table
 
 
@@ -231,9 +231,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "02/25/22"
+??DATE				  Text	 "02/27/22"
 ??FILENAME			  Text	 "mopl1l  "
-??TIME				  Text	 "14:48:03"
+??TIME				  Text	 "19:59:22"
 ??VERSION			  Number 030A
 @32BIT				  Text	 0
 @@E				  Near	 _TEXT:0017
@@ -281,7 +281,7 @@ SLEN				  Near	 _TEXT:0047
 UBINARY				  Qword	 DGROUP:0000
 UPACK				  Tbyte	 DGROUP:0008
 UTOA10				  Near	 _TEXT:005C
-Turbo Assembler	 Version 3.1	    02/25/22 14:48:03	    Page 6
+Turbo Assembler	 Version 3.1	    02/27/22 19:59:22	    Page 6
 Symbol Table
 
 
