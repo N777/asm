@@ -2,8 +2,8 @@
  Start  Stop   Length Name               Class
 
  00000H 00623H 00624H _TEXT              CODE
- 00630H 00957H 00328H _DATA              DATA
- 00960H 00B5FH 00200H STACK              STACK
+ 00630H 0099FH 00370H _DATA              DATA
+ 009A0H 00B9FH 00200H STACK              STACK
 
   Address         Publics by Name
 
