@@ -6,7 +6,7 @@
 ; char *txt[]= {"Иванов И.И.",  "ОАО \"ПАРУС\"",
 ;                        "Ведущий программист", NULL};
 TXT	DW  S1, S2, S3, 0
-S1	DB  'Иванов И.И.', 0
+S1	DB  255 DUP(" "), 0
 S2	DB  'ОАО "ПАРУС"', 0
 S3	DB  'Ведущий программист',0
 	.CODE
@@ -60,3 +60,21 @@ PUTS	PROC  NEAR
 PUTS	ENDP 
 END	BEGIN
  
+inp proc near ; ввод строки до ENTER
+enterch:
+        mov     dl, '>'
+        mov     ah, 02h
+        int     21h
+        mov     cx, 50
+        mov     bx, offset str
+ech:
+        mov     ah, 01h
+        int     21h 
+        cmp al,13
+        jle quit
+        mov     byte ptr [bx],al
+        inc     bx
+        loop    ech
+quit:
+        ret
+inp endp
