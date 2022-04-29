@@ -4,7 +4,17 @@ cls
 rem --------------------------------
 echo ------ Assembling... -------------------------------------------------
 echo.
-TASM.EXE -L -ZI %1.asm
+TASM.EXE -L -ZI mopl1.asm
+IF errorlevel 1 goto err_end
+echo ------ Assembling completed succesfully ------------------------------
+echo.
+echo.
+rem pause
+
+rem --------------------------------
+echo ------ Assembling... -------------------------------------------------
+echo.
+TASM.EXE -L -ZI mopl1l.asm
 IF errorlevel 1 goto err_end
 echo ------ Assembling completed succesfully ------------------------------
 echo.
@@ -15,7 +25,7 @@ rem --------------------------------
 
 echo ------ Linking... ----------------------------------------------------
 echo.
-TLINK.EXE -M -V %1.obj
+TLINK.EXE -M -V mopl1.obj + mopl1l.obj
 IF errorlevel 1 goto err_end
 echo.
 echo ------ Linking completed succesfully ---------------------------------
@@ -27,7 +37,7 @@ rem --------------------------------
 
 echo.
 echo === Build completed succesfully ======================================
-TD.EXE %1.exe
+TD.EXE mopl1.exe
 goto end
 
 :err_end

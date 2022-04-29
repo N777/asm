@@ -6,6 +6,7 @@
 ; char *txt[]= {"Иванов И.И.",  "ОАО \"ПАРУС\"",
 ;                        "Ведущий программист", NULL};
 TXT	DW  S1, S2, S3, 0
+str1 DB	255 DUP(" "), 0
 S1	DB  255 DUP(" "), 0
 S2	DB  'ОАО "ПАРУС"', 0
 S3	DB  'Ведущий программист',0
@@ -14,9 +15,7 @@ BEGIN:	; инициализация сегментного регистра DS
 	MOV  AX,  @DATA ; @DATA закреплено за сегментным
 	MOV  DS,  AX
 	; s = txt; 
-	mov dx, offset S1  ;запись строки в переменную name1
-	mov ah,0ah
-	int 21h
+	call InputInt
 	LEA  SI,  TXT  ; SI ? указатель массива адресов строк
 	;  ПОКА не встретился нулевой указатель, 
 	;  выводить строки текста
@@ -58,15 +57,11 @@ PUTS	PROC  NEAR
 @@R:	POP  DX
 	RET
 PUTS	ENDP 
-END	BEGIN
- 
-inp proc near ; ввод строки до ENTER
+
+InputInt proc
 enterch:
-        mov     dl, '>'
-        mov     ah, 02h
-        int     21h
         mov     cx, 50
-        mov     bx, offset str
+        mov     bx, offset str1
 ech:
         mov     ah, 01h
         int     21h 
@@ -76,5 +71,21 @@ ech:
         inc     bx
         loop    ech
 quit:
+        mov cx, 255
+ 
+m1:
+        addr1 dw offset S1
+        addr2 dw offset str1
+        mov bx,addr2
+        mov al,[bx]
+        mov bx,addr1
+        mov [bx],al
+
+        inc addr1
+        inc addr2
+
+        loop m1
         ret
-inp endp
+InputInt endp
+
+END BEGIN
