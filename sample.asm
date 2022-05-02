@@ -29,8 +29,8 @@ S19	DB  255, 255 DUP(" "), 0
 S20	DB  255, 255 DUP(" "), 0
 S21	DB  255, 255 DUP(" "), 0
 temp	DB  255, 255 DUP(" "), 0
-i db 0
-j db 0
+i dw 0
+j dw 0
 len db 0
 
 
@@ -38,7 +38,6 @@ len db 0
 BEGIN:	; инициализация сегментного регистра DS
 	MOV  AX,  @DATA ; @DATA закреплено за сегментным
 	MOV  DS,  AX
-	add j, 2
 	; s = txt; 
 	LEA  SI,  TXT  ; SI ? указатель массива адресов строк
 	;  ПОКА не встретился нулевой указатель, 
@@ -57,18 +56,25 @@ BEGIN:	; инициализация сегментного регистра DS
 
 begin_cycle:
 	mov cx, 255
+	mov bx, word ptr [len]
 	mov word ptr [DI], 0
 R:	
+	mov j, 0
 	xor si, si
 	LEA  SI,  TXT ; первый цикл
-	CMP  WORD PTR [SI + i],  0
+	CMP bx, i
+	;CMP  WORD PTR [SI + i],  0
 	JE  EXIT
 
 IN_R:
+	xor ax, ax
 	xor di, di
 	LEA  DI,  TXT ; второй цикл
-	CMP  WORD PTR [DI + j],  0
+	mov ax, j
+	cmp bx, ax
 	JE  PRINT
+	;CMP  WORD PTR [DI + j],  0
+	
 
 	mov  SI, word ptr [DI+i]
 	mov  DI, word ptr [DI+j]
@@ -76,15 +82,16 @@ IN_R:
 	JNE IN_END
 
 check_num:
-	mov ah, i
-	cmp ah, j
+	mov ah, byte ptr i
+	cmp ah, byte ptr j
 	jg IN_EXIT
 IN_END:
 	ADD  j,  2
 	JMP  SHORT  IN_R
 
 PRINT:
-	MOV  DI,  [SI]
+	LEA  SI,  TXT
+	MOV  DI,  [SI+i]
 	CALL  PUTS
 
 IN_EXIT:
@@ -149,6 +156,7 @@ not_del_dup:
 next:
         loop    ech
 @@quit:
+		inc len
 		inc len
 		mov     byte ptr [bx],0
         ret
