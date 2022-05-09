@@ -1,11 +1,11 @@
-.MODEL SMALL ; Модель памяти
-	.STACK 200h  ; Размер стека
+.MODEL SMALL ; ?????? ?????
+	.STACK 200h  ; ?????? ???
 	.386
-	LOCALS ; Разрешение локальных переменных (@@имя)
-	; Объявление данных
-	.DATA  ; Начало сегмента данных
-; char *txt[]= {"Иванов И.И.",  "ОАО \"ПАРУС\"",
-;                        "Ведущий программист", NULL};
+	LOCALS ; ??????? ???????? ???????? (@@???)
+	; ???????? ??????
+	.DATA  ; ???? ????? ??????
+; char *txt[]= {"?????? ?.?.",  "??? \"?????\"",
+;                        "????? ???????", NULL};
 TXT	DW  S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, 0
 S1	DB  255, 255 DUP(0), 0
 S2	DB  255, 255 DUP(0), 0
@@ -35,13 +35,13 @@ len db 0
 
 
 	.CODE
-BEGIN:	; инициализация сегментного регистра DS
-	MOV  AX,  @DATA ; @DATA закреплено за сегментным
+BEGIN:	; ?????????? ??????? ????? DS
+	MOV  AX,  @DATA ; @DATA ???????? ?? ??????
 	MOV  DS,  AX
 	; s = txt; 
-	LEA  SI,  TXT  ; SI ? указатель массива адресов строк
-	;  ПОКА не встретился нулевой указатель, 
-	;  выводить строки текста
+	LEA  SI,  TXT  ; SI ? ????? ????? ???? ???
+	;  ???? ?? ??????? ????? ?????, 
+	;  ?????? ???? ???
 @@L:	; while(*s != NULL) {
 	CMP  WORD PTR [SI],  0
 	JE  begin_cycle
@@ -55,35 +55,47 @@ BEGIN:	; инициализация сегментного регистра DS
 
 
 begin_cycle:
+	MOV  DL,  13
+	MOV  AH,  2
+	INT  21h
 	mov cx, 255
 	mov bx, word ptr [len]
-	mov word ptr [DI], 0
 R:	
 	mov j, 0
 	xor si, si
-	LEA  SI,  TXT ; первый цикл
+	LEA  SI,  TXT ; ???? ??
 	CMP bx, i
 	;CMP  WORD PTR [SI + i],  0
 	JE  EXIT
 
 IN_R:
+	;mov ah, byte ptr i
+	;cmp ah, byte ptr j
+	;je IN_END
 	xor ax, ax
 	xor di, di
-	LEA  DI,  TXT ; второй цикл
-	mov ax, j
-	cmp bx, ax
+	cld
+	LEA  DI,  TXT ; ??? ??
+	cmp bx, j
 	JE  PRINT
 	;CMP  WORD PTR [DI + j],  0
 	
-
-	mov  SI, word ptr [DI+i]
-	mov  DI, word ptr [DI+j]
+ 	MOV  DS,  AX
+ 	MOV  ES,  AX
+	add di, i
+	mov  SI, [DI]
+	sub DI, i
+	add DI, j
+	mov  DI, [DI]
 	REPE cmpsb 
-	JNE IN_END
+	JNZ IN_END
 
 check_num:
-	mov ah, byte ptr i
-	cmp ah, byte ptr j
+	MOV  AX,  @DATA
+	MOV  DS,  AX
+	xor ax, ax
+	mov al, byte ptr i
+	cmp al, byte ptr j
 	jg IN_EXIT
 IN_END:
 	ADD  j,  2
@@ -91,7 +103,8 @@ IN_END:
 
 PRINT:
 	LEA  SI,  TXT
-	MOV  DI,  [SI+i]
+	ADD  SI, i 
+	MOV  DI,  [SI]
 	CALL  PUTS
 
 IN_EXIT:
@@ -109,7 +122,7 @@ EXIT:
 
 
 
-; Макрос вывода символа на экран 
+; ????? ???? ????? ?? ??? 
 PUTC	MACRO  CHAR
 IFNB	<CHAR>
 	MOV  DL,  CHAR
@@ -117,10 +130,10 @@ ENDIF
 	MOV  AH,  2
 	INT  21h
 	ENDM
-; Процедура вывода строки, адресуемой DI
+; ????? ???? ????, ??????? DI
 PUTS	PROC  NEAR
 	PUSH  DX
-	; Цикл посимвольного вывода строки
+	; ???? ????????? ???? ????
 	; for(;(_DL = *_DI) != ?\0?; _DI++)
 @@L:	MOV  DL,   [DI]
 	CMP  DL,  0
@@ -129,8 +142,8 @@ PUTS	PROC  NEAR
 	PUTC
 	INC  DI
 	JMP  SHORT @@L
-@@E:	PUTC  13     ; Переход
-	PUTC  10     ;  на новую строку
+@@E:	PUTC  13     ; ????
+	PUTC  10     ;  ?? ????? ????
 @@R:	POP  DX
 	RET
 PUTS	ENDP 
