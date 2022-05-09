@@ -38,6 +38,7 @@ len db 0
 BEGIN:	; ?????????? ??????? ????? DS
 	MOV  AX,  @DATA ; @DATA ???????? ?? ??????
 	MOV  DS,  AX
+	MOV  ES,  AX
 	; s = txt; 
 	LEA  SI,  TXT  ; SI ? ????? ????? ???? ???
 	;  ???? ?? ??????? ????? ?????, 
@@ -69,21 +70,19 @@ R:
 	JE  EXIT
 
 IN_R:
-	;mov ah, byte ptr i
-	;cmp ah, byte ptr j
-	;je IN_END
+	mov ah, byte ptr i
+	cmp ah, byte ptr j
+	je IN_END
 	xor ax, ax
 	xor di, di
-	cld
 	LEA  DI,  TXT ; ??? ??
 	cmp bx, j
 	JE  PRINT
 	;CMP  WORD PTR [DI + j],  0
 	
- 	MOV  DS,  AX
- 	MOV  ES,  AX
+ 	
 	add di, i
-	mov  SI, [DI]
+	mov SI, [DI]
 	sub DI, i
 	add DI, j
 	mov  DI, [DI]
@@ -91,8 +90,8 @@ IN_R:
 	JNZ IN_END
 
 check_num:
-	MOV  AX,  @DATA
-	MOV  DS,  AX
+	;MOV  AX,  @DATA
+	;MOV  DS,  AX
 	xor ax, ax
 	mov al, byte ptr i
 	cmp al, byte ptr j
@@ -105,6 +104,7 @@ PRINT:
 	LEA  SI,  TXT
 	ADD  SI, i 
 	MOV  DI,  [SI]
+	call PRINT_NUM
 	CALL  PUTS
 
 IN_EXIT:
@@ -120,6 +120,14 @@ EXIT:
 
 
 
+PRINT_NUM PROC near
+
+	MOV  DL, byte ptr i 
+	add  DL, 30h
+	MOV  AH,  2
+	INT  21h
+
+PRINT_NUM endp
 
 
 ; ????? ???? ????? ?? ??? 
