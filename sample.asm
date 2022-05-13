@@ -10,25 +10,26 @@ TXT	DW  S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S
 S1	DB  255, 255 DUP(0), 0
 S2	DB  255, 255 DUP(0), 0
 S3	DB  255, 255 DUP(0), 0
-S4	DB  255, 255 DUP(" "), 0
-S5	DB  255, 255 DUP(" "), 0
-S6	DB  255, 255 DUP(" "), 0
-S7	DB  255, 255 DUP(" "), 0
-S8	DB  255, 255 DUP(" "), 0
-S9	DB  255, 255 DUP(" "), 0
-S10	DB  255, 255 DUP(" "), 0
-S11	DB  255, 255 DUP(" "), 0
-S12	DB  255, 255 DUP(" "), 0
-S13	DB  255, 255 DUP(" "), 0
-S14	DB  255, 255 DUP(" "), 0
-S15	DB  255, 255 DUP(" "), 0
-S16	DB  255, 255 DUP(" "), 0
-S17	DB  255, 255 DUP(" "), 0
-S18	DB  255, 255 DUP(" "), 0
-S19	DB  255, 255 DUP(" "), 0
-S20	DB  255, 255 DUP(" "), 0
-S21	DB  255, 255 DUP(" "), 0
-temp	DB  255, 255 DUP(" "), 0
+S4	DB  255, 255 DUP(0), 0
+S5	DB  255, 255 DUP(0), 0
+S6	DB  255, 255 DUP(0), 0
+S7	DB  255, 255 DUP(0), 0
+S8	DB  255, 255 DUP(0), 0
+S9	DB  255, 255 DUP(0), 0
+S10	DB  255, 255 DUP(0), 0
+S11	DB  255, 255 DUP(0), 0
+S12	DB  255, 255 DUP(0), 0
+S13	DB  255, 255 DUP(0), 0
+S14	DB  255, 255 DUP(0), 0
+S15	DB  255, 255 DUP(0), 0
+S16	DB  255, 255 DUP(0), 0
+S17	DB  255, 255 DUP(0), 0
+S18	DB  255, 255 DUP(0), 0
+S19	DB  255, 255 DUP(0), 0
+S20	DB  255, 255 DUP(0), 0
+S21	DB  255, 255 DUP(0), 0
+temp	DB  255, 255 DUP(0), 0
+counter db 1
 i dw 0
 j dw 0
 len db 0
@@ -59,13 +60,12 @@ begin_cycle:
 	MOV  DL,  13
 	MOV  AH,  2
 	INT  21h
-	mov cx, 255
 	mov bx, word ptr [len]
 R:	
 	mov j, 0
 	xor si, si
 	LEA  SI,  TXT ; ???? ??
-	CMP bx, i
+	CMP bx, [i]
 	;CMP  WORD PTR [SI + i],  0
 	JE  EXIT
 
@@ -76,7 +76,7 @@ IN_R:
 	xor ax, ax
 	xor di, di
 	LEA  DI,  TXT ; ??? ??
-	cmp bx, j
+	cmp bx, [j]
 	JE  PRINT
 	;CMP  WORD PTR [DI + j],  0
 	
@@ -86,6 +86,7 @@ IN_R:
 	sub DI, i
 	add DI, j
 	mov  DI, [DI]
+	mov cx, 255
 	REPE cmpsb 
 	JNZ IN_END
 
@@ -121,12 +122,28 @@ EXIT:
 
 
 PRINT_NUM PROC near
-
-	MOV  DL, byte ptr i 
+	pusha
+	mov  dl, counter
 	add  DL, 30h
 	MOV  AH,  2
 	INT  21h
-
+	add  counter, 1
+	mov  DL, ':'
+	MOV  AH,  2
+	INT  21h
+	MOV  ax, i 
+	mov  bl, 2
+	div  bl
+	mov  dl, al
+	add  dl, 1
+	add  DL, 30h
+	MOV  AH,  2
+	INT  21h
+	mov  DL, ' '
+	MOV  AH,  2
+	INT  21h
+	popa
+	ret
 PRINT_NUM endp
 
 
