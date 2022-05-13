@@ -1,11 +1,9 @@
-.MODEL SMALL ; ������ �����
-	.STACK 200h  ; ������ �⥪�
+.MODEL SMALL
+	.STACK 200h  
 	.386
-	LOCALS ; ����襭�� �������� ��६����� (@@���)
-	; ������� ������
-	.DATA  ; ��砫� ᥣ���� ������
-; char *txt[]= {"������ �.�.",  "��� \"�����\"",
-;                        "����騩 �ணࠬ����", NULL};
+	LOCALS
+	.DATA
+
 TXT	DW  S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, 0
 S1	DB  255, 255 DUP(0), 0
 S2	DB  255, 255 DUP(0), 0
@@ -36,15 +34,15 @@ len db 0
 
 
 	.CODE
-BEGIN:	; ���樠������ ᥣ���⭮�� ॣ���� DS
-	MOV  AX,  @DATA ; @DATA ���९���� �� ᥣ�����
+BEGIN:	
+	MOV  AX,  @DATA 
 	MOV  DS,  AX
 	MOV  ES,  AX
 	; s = txt;
-	LEA  SI,  TXT  ; SI ? 㪠��⥫� ���ᨢ� ���ᮢ ��ப
-	;  ���� �� ����⨫�� �㫥��� 㪠��⥫�,
-	;  �뢮���� ��ப� ⥪��
-@@L:	; while(*s != NULL) {
+	LEA  SI,  TXT  
+	
+	
+@@L:	
 	CMP  WORD PTR [SI],  0
 	JE  begin_cycle
 	; puts(*s);
@@ -57,40 +55,40 @@ BEGIN:	; ���樠������ ᥣ���⭮�� ॣ���� DS
 
 
 begin_cycle:
-	MOV  DL,  13
+	MOV  DL,  13 ;перенос строки
 	MOV  AH,  2
 	INT  21h
-	mov bx, word ptr [len]
+	mov bx, word ptr [len] ;заносим в bx количество введенных строк
 R:
 	mov j, 0
 	xor si, si
-	LEA  SI,  TXT ; ???? ??
-	CMP bx, [i]
+	LEA  SI,  TXT 
+	CMP bx, [i] ; while i < len
 	;CMP  WORD PTR [SI + i],  0
 	JE  EXIT
 
 IN_R:
-	mov ah, byte ptr i
+	mov ah, byte ptr i ; проверяем чтобы не сравнивал одну и ту же строку
 	cmp ah, byte ptr j
 	je IN_END
 	xor ax, ax
 	xor di, di
-	LEA  DI,  TXT ; ??? ??
-	cmp bx, [j]
+	LEA  DI,  TXT 
+	cmp bx, [j] ; while j < len
 	JE  PRINT
 	;CMP  WORD PTR [DI + j],  0
 
 
 	add di, i
-	mov SI, [DI]
+	mov SI, [DI] ; si = temp[i]
 	sub DI, i
 	add DI, j
-	mov  DI, [DI]
+	mov  DI, [DI] ; di = temp[j]
 	mov cx, 255
-	REPE cmpsb
+	REPE cmpsb ; сравниваем строки
 	JNZ IN_END
 
-check_num:
+check_num: ; проверяем если это строка встречалась нам до этого, то continue
 	;MOV  AX,  @DATA
 	;MOV  DS,  AX
 	xor ax, ax
@@ -101,7 +99,7 @@ IN_END:
 	ADD  j,  2
 	JMP  SHORT  IN_R
 
-PRINT:
+PRINT: ; выводим строку
 	LEA  SI,  TXT
 	ADD  SI, i
 	MOV  DI,  [SI]
@@ -120,10 +118,10 @@ EXIT:
 	INT  21h
 
 
-
-PRINT_NUM PROC near
+; процедура выводит номер_текущей_строки:номер_исходной_строки
+PRINT_NUM PROC near 
 	pusha
-	mov  dl, counter
+	mov  dl, counter ; номер_текущей_строки
 	add  DL, 30h
 	MOV  AH,  2
 	INT  21h
@@ -131,9 +129,9 @@ PRINT_NUM PROC near
 	mov  DL, ':'
 	MOV  AH,  2
 	INT  21h
-	MOV  ax, i
+	MOV  ax, i ; номер_исходной_строки
 	mov  bl, 2
-	div  bl
+	div  bl	; тк учёт ведётся всегда x2, то делим
 	mov  dl, al
 	add  dl, 1
 	add  DL, 30h
@@ -147,7 +145,7 @@ PRINT_NUM PROC near
 PRINT_NUM endp
 
 
-; ����� �뢮�� ᨬ���� �� �࠭
+
 PUTC	MACRO  CHAR
 IFNB	<CHAR>
 	MOV  DL,  CHAR
@@ -155,10 +153,10 @@ ENDIF
 	MOV  AH,  2
 	INT  21h
 	ENDM
-; ��楤�� �뢮�� ��ப�, ����㥬�� DI
+
 PUTS	PROC  NEAR
 	PUSH  DX
-	; ���� ��ᨬ���쭮�� �뢮�� ��ப�
+	
 	; for(;(_DL = *_DI) != ?\0?; _DI++)
 @@L:	MOV  DL,   [DI]
 	CMP  DL,  0
@@ -167,24 +165,24 @@ PUTS	PROC  NEAR
 	PUTC
 	INC  DI
 	JMP  SHORT @@L
-@@E:	PUTC  13     ; ���室
-	PUTC  10     ;  �� ����� ��ப�
+@@E:	PUTC  13     
+	PUTC  10     
 @@R:	POP  DX
 	RET
 PUTS	ENDP 
 
-InputInt proc near
+InputInt proc near ; посимвольный ввод строки
 enterch:
-        mov     cx, 254
+        mov     cx, 254 ; ограничение 254 символа
         mov     bx, offset DI
 ech:
         mov     ah, 01h
         int     21h 
         cmp 	al,13
         jle 	@@quit
-		cmp		al, "!"
+		cmp		al, "!" ; заканчиваем ввод сиволов досрочно
 		je		begin_cycle
-		cmp		al, " "
+		cmp		al, " " ; если встречаем несколько пробелов подряд, то оставляем только один
 		jne		not_del_dup
 		cmp		al, byte ptr [bx-1]
 		je		next
