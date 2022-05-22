@@ -37,7 +37,7 @@ rem --------------------------------
 
 echo.
 echo === Build completed succesfully ======================================
-TD.EXE mopl1.exe
+mopl1.exe
 goto end
 
 :err_end
